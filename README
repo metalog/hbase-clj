@@ -1,0 +1,28 @@
+The hbase-clj is a simple wrapper around new (0.20.0+) hbase client library. 
+Work in progress (just started).
+
+Usage:
+
+(create-table
+ (htd :courses :info :student))
+
+(create-table
+ (htd :students
+      {:family :info, :max-versions 1}
+      :course
+      {:family :activities, :max-versions +all-versions+}))
+
+(with-htable students, courses
+  (hput students
+	["01010" [:info :name "John Doe"] [:info :sex :m] [:course "101" :regular]]
+	["01011" [:info :name "Jane Roe"] [:info :sex :f] [:course "101" :regular]])
+  (hput courses
+	["101" [:info :title "Meta Intro"] [:info :into "Introduction to meta introductions etc."]
+	       [:student "01010" :regular] [:student "01011" :regular]])
+  
+  (with-open [rows (hscan students ["01000" "01999"] :info :activities)]
+    (let [result (map hnvmap rows)]
+      (comment do smth with results available:
+	       (-> (first result) :info :name b2s)))))
+
+See tests for more usage examples.
